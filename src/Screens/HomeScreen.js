@@ -6,7 +6,7 @@ import { ThemeContext, UserContext } from '../Context';
 import { ThemeInput, CustomButton } from '../Components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BackgroundImage = require('../../assets/background_4_home.jpg');
+const BackgroundImage = require('../../assets/background_memory.jpg');
 
 const HomeScreen = ({ navigation }) => {
   const { setUser } = useContext(UserContext);
@@ -26,7 +26,7 @@ const HomeScreen = ({ navigation }) => {
       style={styles.backgroundImage} 
       resizeMode="stretch"
     >
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10, marginTop: '15%' }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10 }}>
         <ThemeInput
           style={{ marginVertical: 7 }}
           label="Tvoje ime in priimek"
