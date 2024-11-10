@@ -5,6 +5,7 @@ import Toast from 'react-native-toast-message';
 import { ThemeContext, UserContext } from '../Context';
 import { ThemeInput, CustomButton } from '../Components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Picker } from '@react-native-picker/picker';
 
 const BackgroundImage = require('../../assets/background_memory.jpg');
 
@@ -12,6 +13,7 @@ const HomeScreen = ({ navigation }) => {
   const { setUser } = useContext(UserContext);
   const { theme } = useContext(ThemeContext);
   const [userName, setUserName] = useState('');
+  const [gridSize, setGridSize] = useState('3x4'); // Default grid size
 
   // Clear the TextInput when the screen is focused
   useFocusEffect(
@@ -40,6 +42,18 @@ const HomeScreen = ({ navigation }) => {
           onChangeText={(text) => setUserName(text)}
         />
 
+        <Picker
+          selectedValue={gridSize}
+          style={{ height: 50, width: 200 }}
+          onValueChange={(itemValue) => setGridSize(itemValue)}
+        >
+          <Picker.Item label="3x4 (12 cards)" value="3x4" />
+          <Picker.Item label="4x4 (16 cards)" value="4x4" />
+          <Picker.Item label="5x4 (20 cards)" value="5x4" />
+          <Picker.Item label="6x5 (30 cards)" value="6x5" />
+          <Picker.Item label="6x6 (36 cards)" value="6x6" />
+        </Picker>
+
         <CustomButton
           text="Začni s kvizom"
           type="secondary"
@@ -47,8 +61,7 @@ const HomeScreen = ({ navigation }) => {
           onButtonPress={() => {
             if (userName) {
               setUser(userName); // Set the user name in context
-              navigation.navigate('Quiz'); // Navigate to the quiz screen
-              console.log('Button pressed!');
+              navigation.navigate('MemoryScreen', { gridSize }); // Pass grid size to MemoryScreen
             } else {
               Toast.show({
                 type: 'info',

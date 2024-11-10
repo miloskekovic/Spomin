@@ -11,142 +11,209 @@ const screenHeight = Dimensions.get('window').height;
 
 const ChocolateBackground = require('../../assets/Resized_Final_Background_4K_UHD.jpg');
 const BackgroundImage = require('../../assets/chocolate-background.webp');
+
 let timerInterval;
 const containerWidth = screenWidth * 0.9;
 const containerHeight = screenHeight * 0.9;
 
-// Shuffle and duplicate cards to create pairs
-const shuffleCards = () => {
-  const duplicatedCards = [...Cards, ...Cards];
-  return duplicatedCards.sort(() => Math.random() - 0.5);
-};
-
-const MemoryScreen = ({ navigation }) => {
-  const [cards, setCards] = useState(shuffleCards());
-  const [flippedCards, setFlippedCards] = useState([]);
-  const [matchedCards, setMatchedCards] = useState([]);
-  const [turns, setTurns] = useState(0);
-  const [lastClickedCardName, setLastClickedCardName] = useState('');
-  const [timer, setTimer] = useState(0);
-
-  // Set grid layout explicitly to 6x6
-  const numCards = Cards.length * 2;
-  const numCols = Math.ceil(Math.sqrt(numCards));
-  const numRows = Math.ceil(numCards / numCols);
-  const cardMargin = 5;
-
-  // Calculate card size based on container size and grid layout
-  const cardWidth = (containerWidth - cardMargin * (columns + 1)) / columns;
-  const cardHeight = (containerHeight - cardMargin * (rows + 1)) / rows;
-  const cardSize = Math.min(cardWidth, cardHeight); // Ensure square shape
-
-  const handleCardPress = (index) => {
-      if (flippedCards.length === 2 || flippedCards.includes(index) || matchedCards.includes(cards[index].id)) {
-          return;
+// Shuffle and select unique pairs based on the required pair count
+const shuffleAndSelectCards = (pairCount) => {
+    // Shuffle the Cards array and pick the first `pairCount` unique cards
+    const shuffledCards = [...Cards].sort(() => Math.random() - 0.5);
+    
+    // Select the first `pairCount` unique cards
+    const uniqueCards = [];
+    for (let i = 0; i < shuffledCards.length && uniqueCards.length < pairCount; i++) {
+      const card = shuffledCards[i];
+      
+      // Ensure the card is unique by checking its ID
+      if (!uniqueCards.some(selectedCard => selectedCard.id === card.id)) {
+        uniqueCards.push(card);
       }
-
-      const newFlippedCards = [...flippedCards, index];
-      setFlippedCards(newFlippedCards);
-      setLastClickedCardName(cards[index].name);
-
-      if (newFlippedCards.length === 2) {
-          checkForMatch(newFlippedCards);
-      }
+    }
+  
+    // Duplicate each selected card to form pairs
+    const pairedCards = [...uniqueCards, ...uniqueCards];
+    
+    // Shuffle the paired cards to randomize their positions on the grid
+    return pairedCards.sort(() => Math.random() - 0.5);
   };
 
-  const checkForMatch = (newFlippedCards) => {
-      const [firstIndex, secondIndex] = newFlippedCards;
-      if (cards[firstIndex].id === cards[secondIndex].id) {
-          setMatchedCards([...matchedCards, cards[firstIndex].id]);
-          setFlippedCards([]);
-      } else {
-          setTimeout(() => setFlippedCards([]), 1000);
-      }
-      setTurns(turns + 1);
-  };
+const MemoryScreen = ({ route, navigation }) => {
+    const { user } = useContext(UserContext);
+    const { gridSize } = route.params;
+    const pairCount = {
+      '3x4': 6,
+      '4x4': 8,
+      '5x4': 10,
+      '6x5': 15,
+      '6x6': 18
+    }[gridSize] || 6;
+    
+    const [userResultPopupVisibility, setUserResultPopupVisibility] = useState(false);
+    const [cards, setCards] = useState(shuffleAndSelectCards(pairCount));
+    const [flippedCards, setFlippedCards] = useState([]);
+    const [matchedCards, setMatchedCards] = useState([]);
+    const [turns, setTurns] = useState(0);
+    const [lastClickedCardName, setLastClickedCardName] = useState('');
+    const [timer, setTimer] = useState(0);
+    const [score, setScore] = useState(0);
 
-  const resetGame = () => {
-      setCards(shuffleCards());
-      setFlippedCards([]);
-      setMatchedCards([]);
-      setTurns(0);
-      setLastClickedCardName('');
-  };
+    const numCols = parseInt(gridSize.split('x')[1]);
+    const numRows = parseInt(gridSize.split('x')[0]);
+    const cardMargin = 5;
 
-  const formatTime = (time) => {
-      const minutes = Math.floor(time / 60).toString().padStart(2, '0');
-      const seconds = (time % 60).toString().padStart(2, '0');
-      return `${minutes}:${seconds}`;
-  };
+    // Calculate card size based on container size and grid layout
+    const cardWidth = (containerWidth - cardMargin * (numCols + 1)) / numCols;
+    const cardHeight = (containerHeight - cardMargin * (numRows + 1)) / numRows;
+    const cardSize = Math.min(cardWidth, cardHeight);
 
-  useEffect(() => {
-      timerInterval = setInterval(() => {
-          setTimer((prevTime) => prevTime + 1);
-      }, 1000);
+    const handleCardPress = (index) => {
+        if (flippedCards.length === 2 || flippedCards.includes(index) || matchedCards.includes(cards[index].id)) {
+            return;
+        }
 
-      return () => clearInterval(timerInterval);
-  }, []);
+        const newFlippedCards = [...flippedCards, index];
+        setFlippedCards(newFlippedCards);
+        setLastClickedCardName(cards[index].name);
 
-  useEffect(() => {
-      if (matchedCards.length === Cards.length) {
-          Alert.alert('Congratulations!', `You won in ${turns} turns!`, [{ text: 'Play Again', onPress: resetGame }]);
-      }
-  }, [matchedCards]);
+        if (newFlippedCards.length === 2) {
+            checkForMatch(newFlippedCards);
+        }
+    };
 
-  return (
-      <ImageBackground source={BackgroundImage} style={styles.backgroundImage} resizeMode="stretch">
-          <View style={styles.headerContainer}>
-              <View style={styles.turnsContainer}>
-                  <ThemeText type='headerText'>Poteze: {turns}</ThemeText>
-              </View>
-              <View style={styles.cardNameContainer}>
-                  {lastClickedCardName ? (
-                      <ThemeText type='headerText'>{lastClickedCardName}</ThemeText>
-                  ) : (
-                      <ThemeText type='headerText'>Click a card to see its name</ThemeText>
-                  )}
-              </View>
-              <View style={styles.clockContainer}>
-                  <View style={styles.timerContainer}>
-                      <Text style={styles.timerText}>{formatTime(timer)}</Text>
-                  </View>
-              </View>
-          </View>
-          <View style={styles.centralContainer}>
-            <View style={styles.grid}>
-                {cards.map((card, index) => {
-                    const isFlipped = flippedCards.includes(index) || matchedCards.includes(card.id);
-                    return (
-                        <TouchableOpacity
-                            key={index}
-                            style={[
-                                styles.card,
-                                {
-                                    width: (screenWidth * 0.83 / numCols) - (screenHeight * 0.02),   // Adjust for horizontal margins
-                                    height: (screenHeight * 0.79 / numRows) - (screenHeight * 0.02), // Adjust for vertical margins within the 80% height container
-                                },
-                                isFlipped && styles.cardFlipped
-                            ]}
-                            onPress={() => handleCardPress(index)}
-                        >
-                            {isFlipped ? (
-                                <Image 
-                                    source={card.image} 
-                                    style={styles.cardImage} 
-                                    resizeMode="contain"
-                                />
-                            ) : (
-                                <Text style={styles.cardText}>?</Text>
-                            )}
-                        </TouchableOpacity>
-                    );
-                })}
+    const checkForMatch = (newFlippedCards) => {
+        const [firstIndex, secondIndex] = newFlippedCards;
+        if (cards[firstIndex].id === cards[secondIndex].id) {
+            setMatchedCards([...matchedCards, cards[firstIndex].id]);
+            setFlippedCards([]);
+        } else {
+            setTimeout(() => setFlippedCards([]), 1000);
+        }
+        setTurns(turns + 1);
+    };
+
+    const calculateScore = () => {
+        const timePenalty = timer * 2;
+        const turnPenalty = turns * 50;
+        const baseScore = 10000;
+        const finalScore = Math.max(0, baseScore - timePenalty - turnPenalty);
+        setScore(finalScore);
+        console.log("Score calculated:", finalScore); // Debug log for score calculation
+    };
+
+    const resetGame = () => {
+        setCards(shuffleAndSelectCards(pairCount));
+        setFlippedCards([]);
+        setMatchedCards([]);
+        setTurns(0);
+        setLastClickedCardName('');
+        setTimer(0);
+    };
+
+    const formatTime = (time) => {
+        const minutes = Math.floor(time / 60).toString().padStart(2, '0');
+        const seconds = (time % 60).toString().padStart(2, '0');
+        return `${minutes}:${seconds}`;
+    };
+
+    function renderUserResultPopup() {
+        return (
+            <Popup
+                isVisible={userResultPopupVisibility}
+                onClose={() => setUserResultPopupVisibility(false)}
+                titleText={'Rezultat Kviza'}
+                cancelOption={true}
+                wrapContent={
+                    <View style={{ alignSelf: 'center', justifyContent: 'center' }}>
+                        <ThemeText type={'popupBodyText'} style={{textAlign:'center'}}>
+                            {`Bravo, ${user}!`}
+                        </ThemeText>
+                        <ThemeText type={'popupBodyText'} style={{textAlign:'center'}}>
+                            {`You won in ${turns} turns!`}
+                        </ThemeText>
+                        <ThemeText type={'popupBodyText'} style={{textAlign:'center'}}>
+                            {`Upoštevajoč tvoj čas, je tvoj rezultat: ${score}`}
+                        </ThemeText>
+                        <View style={{ alignSelf: 'center', justifyContent: 'space-around', flexDirection: 'row', marginTop: screenHeight * 0.02 }}>
+                            <CustomButton type={'primary'} text={'Prekliči'} onButtonPress={() => setUserResultPopupVisibility(false)} style={{width: screenWidth * 0.1, marginRight: screenWidth * 0.01}}/>
+                            <CustomButton type={'primary'} text={'Potrdi'} onButtonPress={() => {setUserResultPopupVisibility(false); navigation.navigate('ListOfResultsScreen', { score, gridSize })}} style={{width: screenWidth * 0.1}} />
+                        </View>
+                    </View>
+                }
+            />
+        )
+    }
+
+    useEffect(() => {
+        timerInterval = setInterval(() => {
+            setTimer((prevTime) => prevTime + 1);
+        }, 1000);
+
+        return () => clearInterval(timerInterval);
+    }, []);
+
+    useEffect(() => {
+        if (matchedCards.length === pairCount) {
+            clearInterval(timerInterval);
+            calculateScore();
+            setUserResultPopupVisibility(true);
+        }
+    }, [matchedCards]);
+
+    return (
+        <ImageBackground source={BackgroundImage} style={styles.backgroundImage} resizeMode="stretch">
+            <View style={styles.headerContainer}>
+                <View style={styles.turnsContainer}>
+                    <ThemeText type='headerText'>Poteze: {turns}</ThemeText>
+                </View>
+                <View style={styles.cardNameContainer}>
+                    {lastClickedCardName ? (
+                        <ThemeText type='headerText'>{lastClickedCardName}</ThemeText>
+                    ) : (
+                        <ThemeText type='headerText'>Click a card to see its name</ThemeText>
+                    )}
+                </View>
+                <View style={styles.clockContainer}>
+                    <View style={styles.timerContainer}>
+                        <ThemeText type='headerText'>{formatTime(timer)}</ThemeText>
+                    </View>
+                </View>
             </View>
-        </View>
-        <View style={styles.footerContainer}>
-        </View>
-      </ImageBackground>
-  );
+            <View style={styles.centralContainer}>
+                {renderUserResultPopup()}
+                <View style={styles.grid}>
+                    {cards.map((card, index) => {
+                        const isFlipped = flippedCards.includes(index) || matchedCards.includes(card.id);
+                        return (
+                            <TouchableOpacity
+                                key={index}
+                                style={[
+                                    styles.card,
+                                    {
+                                        width: (screenWidth * 0.8 / numCols) - (screenHeight * 0.01),
+                                        height: (screenHeight * 0.8 / numRows) - (screenHeight * 0.01),
+                                    },
+                                    isFlipped && styles.cardFlipped
+                                ]}
+                                onPress={() => handleCardPress(index)}
+                            >
+                                {isFlipped ? (
+                                    <Image 
+                                        source={card.image} 
+                                        style={styles.cardImage} 
+                                        resizeMode="contain"
+                                    />
+                                ) : (
+                                    <Text style={styles.cardText}>?</Text>
+                                )}
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
+            </View>
+        </ImageBackground>
+    );
 };
 
 const styles = StyleSheet.create({
@@ -163,17 +230,19 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: 10,
+      //backgroundColor: 'blue'
   },
   footerContainer: {
       flex: screenHeight * 0.1,
       width: '100%',
+      backgroundColor: 'red'
   },
   centralContainer: {
       width: screenWidth * 0.9,
       height: screenHeight * 0.8,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: 'green'
+      //backgroundColor: 'green'
   },
   turnsContainer: {
       width: '20%',
@@ -190,11 +259,10 @@ const styles = StyleSheet.create({
   clockContainer: {
       width: '20%',
       justifyContent: 'center',
-      alignItems: 'center',
-      padding: 10,
+      alignItems: 'center'
   },
   timerContainer: {
-      padding: 10,
+      padding: screenHeight * 0.005,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
       borderRadius: 5,
   },
@@ -206,7 +274,7 @@ const styles = StyleSheet.create({
   grid: {
       width: '100%', // Ensure the grid is centered and occupies 80% of the screen width
       height: '100%', // Ensure grid takes up 100% of the centralContainer
-      backgroundColor: 'yellow',
+      //backgroundColor: 'yellow',
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'center',

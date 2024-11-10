@@ -12,7 +12,7 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen name="Quiz" component={MemoryScreen} />
+      <Stack.Screen name="MemoryScreen" component={MemoryScreen} />
       <Stack.Screen name="UserResultScreen" component={UserResultScreen} />
       <Stack.Screen name="ListOfResultsScreen" component={ListOfResultsScreen} />
     </Stack.Navigator>
