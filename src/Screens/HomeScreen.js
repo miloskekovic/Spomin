@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { ThemeContext, UserContext } from '../Context';
 import { ThemeInput, CustomButton } from '../Components';
+import { fontSize as FS } from '../Constants/Dimensions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 
@@ -30,7 +31,7 @@ const HomeScreen = ({ navigation }) => {
     >
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10 }}>
         <ThemeInput
-          style={{ marginVertical: 7 }}
+          style={{ marginTop: FS * 0.5}}
           label="Tvoje ime in priimek"
           required={true}
           returnKeyType="done"
@@ -44,7 +45,7 @@ const HomeScreen = ({ navigation }) => {
 
         <Picker
           selectedValue={gridSize}
-          style={{ height: 50, width: 200 }}
+          style={{ padding: FS * 0.1, width: '25%', backgroundColor: theme.secondaryColor, marginTop: FS * 0.5, borderRadius: FS * 0.5 }}
           onValueChange={(itemValue) => setGridSize(itemValue)}
         >
           <Picker.Item label="3x4 (12 cards)" value="3x4" />
@@ -53,24 +54,24 @@ const HomeScreen = ({ navigation }) => {
           <Picker.Item label="6x5 (30 cards)" value="6x5" />
           <Picker.Item label="6x6 (36 cards)" value="6x6" />
         </Picker>
-
-        <CustomButton
-          text="Začni s kvizom"
-          type="secondary"
-          style={{ backgroundColor: theme.primaryColor, color: theme.secondaryColor }}
-          onButtonPress={() => {
-            if (userName) {
-              setUser(userName); // Set the user name in context
-              navigation.navigate('MemoryScreen', { gridSize }); // Pass grid size to MemoryScreen
-            } else {
-              Toast.show({
-                type: 'info',
-                text1: 'Najprej vnesi svoje ime in priimek',
-                visibilityTime: 2500,
-              });
-            }
-          }}
-        />
+        <View style={{ marginTop: FS * 0.5 }}>
+          <CustomButton
+            text="Začni s kvizom"
+            type="primary"            
+            onButtonPress={() => {
+              if (userName) {
+                setUser(userName); // Set the user name in context
+                navigation.navigate('MemoryScreen', { gridSize }); // Pass grid size to MemoryScreen
+              } else {
+                Toast.show({
+                  type: 'info',
+                  text1: 'Najprej vnesi svoje ime in priimek',
+                  visibilityTime: 2500,
+                });
+              }
+            }}
+          />
+        </View>
       </View>
     </ImageBackground>
   );

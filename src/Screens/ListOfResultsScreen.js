@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, StyleSheet, ImageBackground, FlatList } from 'react-native';
-import { UserContext, ThemeContext } from '../Context';
+import { UserContext, ThemeContext, Colors } from '../Context';
 import { ThemeText, CustomButton } from '../Components';
+import { customPadding } from '../Constants/Dimensions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
+import { color } from '@rneui/base';
 
-const ChocolateBackground = require('../../assets/resized_chocolate_quiz_background_4K_UHD_v2.png');
+const ChocolateBackground = require('../../assets/background_11.webp');
 
 const ListOfResultsScreen = ({ route, navigation }) => {
   const { user } = useContext(UserContext);
@@ -84,7 +86,7 @@ const ListOfResultsScreen = ({ route, navigation }) => {
   return (
     <ImageBackground source={ChocolateBackground} style={styles.backgroundImage} resizeMode="stretch">
       <View style={styles.container}>
-        <ThemeText type={'popupHeaderText'} style={{ textAlign: 'center' }}>
+        <ThemeText type={'headerText'} style={{ textAlign: 'center', color: theme.primaryColor }}>
           {'Vodilna Lestvica'}
         </ThemeText>
 
@@ -92,7 +94,7 @@ const ListOfResultsScreen = ({ route, navigation }) => {
         <Picker
           selectedValue={selectedCategory}
           style={{width: '100%',
-            height: 50,
+            padding: customPadding,
             marginVertical: 10,backgroundColor: theme.secondaryColor}}
           onValueChange={(itemValue) => setSelectedCategory(itemValue)}
         >
@@ -139,7 +141,7 @@ const styles = StyleSheet.create({
   },
   container: {
     width: '20%',
-    height: '40%',
+    height: '60%',
     //padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
@@ -159,7 +161,7 @@ const styles = StyleSheet.create({
   },
   nextPlayerButton: {
     marginTop: 20,
-    width: '70%',
+    width: '90%',
   },
   resetButton: {
     marginTop: 10,

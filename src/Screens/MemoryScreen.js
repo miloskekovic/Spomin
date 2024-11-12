@@ -14,7 +14,7 @@ const BackgroundImage = require('../../assets/chocolate-background.webp');
 
 let timerInterval;
 const containerWidth = screenWidth * 0.9;
-const containerHeight = screenHeight * 0.9;
+const containerHeight = screenHeight * 0.8;
 
 // Shuffle and select unique pairs based on the required pair count
 const shuffleAndSelectCards = (pairCount) => {
@@ -121,26 +121,11 @@ const MemoryScreen = ({ route, navigation }) => {
         return (
             <Popup
                 isVisible={userResultPopupVisibility}
-                onClose={() => setUserResultPopupVisibility(false)}
-                titleText={'Rezultat Kviza'}
+                titleText={'Rezultat Spomina'}
+                messageText = {`Bravo, ${user}!\nZa zmago si potreboval/-a ${turns} potez!\nUpoštevajoč tvoj čas, je tvoj rezultat: ${score}`}
                 cancelOption={true}
-                wrapContent={
-                    <View style={{ alignSelf: 'center', justifyContent: 'center' }}>
-                        <ThemeText type={'popupBodyText'} style={{textAlign:'center'}}>
-                            {`Bravo, ${user}!`}
-                        </ThemeText>
-                        <ThemeText type={'popupBodyText'} style={{textAlign:'center'}}>
-                            {`You won in ${turns} turns!`}
-                        </ThemeText>
-                        <ThemeText type={'popupBodyText'} style={{textAlign:'center'}}>
-                            {`Upoštevajoč tvoj čas, je tvoj rezultat: ${score}`}
-                        </ThemeText>
-                        <View style={{ alignSelf: 'center', justifyContent: 'space-around', flexDirection: 'row', marginTop: screenHeight * 0.02 }}>
-                            <CustomButton type={'primary'} text={'Prekliči'} onButtonPress={() => setUserResultPopupVisibility(false)} style={{width: screenWidth * 0.1, marginRight: screenWidth * 0.01}}/>
-                            <CustomButton type={'primary'} text={'Potrdi'} onButtonPress={() => {setUserResultPopupVisibility(false); navigation.navigate('ListOfResultsScreen', { score, gridSize })}} style={{width: screenWidth * 0.1}} />
-                        </View>
-                    </View>
-                }
+                onClose={() => setUserResultPopupVisibility(false)}
+                onRightButtonPress={() => {setUserResultPopupVisibility(false); navigation.navigate('ListOfResultsScreen', { score, gridSize })}}                    
             />
         )
     }
@@ -171,7 +156,7 @@ const MemoryScreen = ({ route, navigation }) => {
                     {lastClickedCardName ? (
                         <ThemeText type='headerText'>{lastClickedCardName}</ThemeText>
                     ) : (
-                        <ThemeText type='headerText'>Click a card to see its name</ThemeText>
+                        <ThemeText type='headerText'>Klikni kartico, da vidiš njeno ime</ThemeText>
                     )}
                 </View>
                 <View style={styles.clockContainer}>
@@ -211,6 +196,9 @@ const MemoryScreen = ({ route, navigation }) => {
                         );
                     })}
                 </View>
+            </View>
+            <View style={styles.headerContainer}>
+                
             </View>
         </ImageBackground>
     );
